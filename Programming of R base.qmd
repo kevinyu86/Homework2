@@ -1,0 +1,124 @@
+---
+title: "Programming in Base R"
+format: html
+editor: visual
+---
+
+## Task 1: Basic Vector practice
+
+```{r}
+# create vectors
+pre_bp <- c(130, 128, 116, 124, 133, 134, 118, 126, 114, 127, 141, 138, 128, 140, 137, 131, 120, 128, 139, 135)
+post_bp <- c(114, 98, 113, 99, 107, 116, 113, 111, 119, 117, 101, 119, 130, 122, 106, 106, 124, 102, 117, 113)
+
+# assign names
+names(pre_bp) <- paste("Subject", 1:20, sep = "_")
+names(post_bp) <- paste("Subject", 1:20, sep = "_")
+
+# calculate change in blood pressure
+dif_bp <- pre_bp - post_bp
+
+# calculate average decrase 
+mean(dif_bp)
+
+# determine positive changes
+which(dif_bp > 0)
+
+# subset positive changes
+positive_bp <- dif_bp[-c(9, 13, 17)]
+
+# calculate average decrease of positive change
+mean(positive_bp)
+```
+
+## Task 2: Basic Data Frame practice
+```{r}
+# create data frame
+patient <- paste("Subject", 1:20, sep = "_")
+bp_df <- data.frame(patient, pre_bp, post_bp, dif_bp)
+
+# select negative dif_bp
+subset(bp_df, dif_bp < 0)
+
+# add new column
+bp_df$new_col <- bp_df$post_bp < 120
+
+# print data frame
+knitr::kable(bp_df)
+```
+
+## Task 3: List practice
+```{r}
+# create new data frame
+patient <- paste("Subject", 1:10, sep = "_")
+pre_bp <- c(138, 135, 147, 117, 152, 134, 114, 121, 131, 130)
+post_bp<- c(105, 136, 123, 130, 134, 143, 135, 139, 120, 124)
+dif_bp <- pre_bp - post_bp
+new_col <- post_bp < 120
+
+placebo_df <- data.frame(patient, pre_bp, post_bp, dif_bp, new_col)
+
+# create list
+bp_list <- list(treatment = bp_df, placebo = placebo_df)
+
+# access first list element
+bp_list[1]
+bp_list[[1]]
+bp_list$treatment
+
+# access placebo pre_bp column
+bp_list$placebo$pre_bp
+```
+## Task 4: Control Flow Practice
+```{r}
+# add status column for both data frames
+bp_list$treatment$status <- character(20)
+bp_list$placebo$status <- character(10)
+
+for (i in 1:20) {
+if(bp_list$treatment$post_bp[i] > 130) { 
+  bp_list$treatment$status[i] = "high"
+} else if (bp_list$treatment$post_bp[i] > 120) {
+  bp_list$treatment$status[i] = "borderline"
+} else if (bp_list$treatment$post_bp[i] <= 120) {
+  bp_list$treatment$status[i] = "optimal"
+}
+}
+
+for (i in 1:10) {
+if(bp_list$placebo$post_bp[i] > 130) { 
+  bp_list$placebo$status[i] = "high"
+} else if (bp_list$placebo$post_bp[i] > 120) {
+  bp_list$placebo$status[i] = "borderline"
+} else if (bp_list$placebo$post_bp[i] <= 120) {
+  bp_list$placebo$status[i] = "optimal"
+}
+}
+
+bp_list$treatment
+bp_list$placebo
+
+```
+## Task 5: Function Writing
+```{r}
+stats <- function(list_name, stats_name = "mean") {
+  my_fun <- get(stats_name)
+  n <- length(list_name)
+  res <- c()
+  for (i in 1:n) {
+    aver1 <- my_fun(list_name[[i]][,2])
+    aver2 <- my_fun(list_name[[i]][,3])
+    aver3 <- my_fun(list_name[[i]][,4])
+    res <- append(res,c(aver1,aver2,aver3))
+  }
+  names(res) <- paste("pre_treatment", "post_treatment","dif_treatment","pre_placebo","post_placebo", "dif_placebo")
+  return(res)
+}
+
+stats(bp_list)
+stats(bp_list, "var")
+stats(bp_list, "sd")
+stats(bp_list, "min")
+stats(bp_list, "max")
+```
+
